@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>广平王跑团 · 秋风起 踏风开跑</title>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://unpkg.com/lucide@1.17.0/dist/umd/lucide.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, 'PingFang SC', 'Noto Sans SC', 'Segoe UI', sans-serif;
+  background: #faf6f0;
+  color: #2d1f0f;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 480px; margin: 0 auto; padding: 16px 14px 32px; }
+
+/* Hero */
+.hero {
+  position: relative; overflow: hidden; border-radius: 20px;
+  padding: 44px 24px 36px; text-align: center;
+  background: linear-gradient(160deg, #1a1208 0%, #2d1f0f 30%, #3d2817 60%, #4a2f12 100%);
+  color: #fff8f0;
+}
+.hero-glow1 { position: absolute; top: -20px; left: -20px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(232,93,4,0.15), transparent 70%); }
+.hero-glow2 { position: absolute; bottom: -30px; right: -10px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(255,182,39,0.1), transparent 70%); }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px;
+  border-radius: 999px; background: rgba(232,93,4,0.2);
+  border: 1px solid rgba(255,182,39,0.3); margin-bottom: 20px;
+  font-size: 12px; letter-spacing: 1.5px; color: #FAA307; font-weight: 500;
+}
+.hero h1 {
+  font-size: 36px; font-weight: 700; margin: 0 0 6px; letter-spacing: 3px;
+  line-height: 1.25;
+  background: linear-gradient(135deg, #FAA307, #FF6B35, #E85D04);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero p { font-size: 13px; color: #c4a884; margin: 0 0 22px; line-height: 1.7; }
+.hero-date {
+  display: inline-flex; align-items: center; gap: 14px; padding: 12px 24px;
+  border-radius: 14px; background: linear-gradient(135deg, rgba(232,93,4,0.25), rgba(74,47,18,0.4));
+  border: 1px solid rgba(250,163,7,0.35);
+}
+.hero-date-label { font-size: 10px; color: #c4a884; letter-spacing: 1px; }
+.hero-date-value { font-size: 20px; font-weight: 700; color: #FFD60A; letter-spacing: 1px; }
+.hero-divider { width: 1px; height: 28px; background: rgba(255,214,10,0.3); }
+.hero-date-value2 { font-size: 13px; font-weight: 500; color: #FAA307; }
+
+/* Stats */
+.stats { margin-top: 12px; display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.stat-card {
+  padding: 16px 14px; border-radius: 14px; text-align: center;
+  background: linear-gradient(135deg, #fff8f0, #fef0e0);
+  border: 1px solid #f5e6d3;
+}
+.stat-card svg { margin-bottom: 4px; }
+.stat-value { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat-label { font-size: 11px; color: #8b7355; margin-top: 2px; }
+
+/* Chart */
+.chart-section {
+  margin-top: 12px; padding: 20px 16px 16px; border-radius: 16px;
+  background: #fffaf5; border: 1px solid #f0e0cc;
+}
+.chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.chart-title { font-size: 15px; font-weight: 600; color: #2d1f0f; }
+.chart-subtitle { font-size: 11px; color: #8b7355; margin-top: 3px; }
+.chart-legend { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #8b7355; }
+.legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* Awards */
+.awards-header { text-align: center; margin: 20px 0 14px; }
+.awards-header h2 { font-size: 17px; font-weight: 600; color: #2d1f0f; letter-spacing: 2px; display: inline-flex; align-items: center; gap: 8px; }
+.awards-header p { font-size: 11px; color: #8b7355; margin-top: 5px; }
+.awards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.award-card { border-radius: 16px; overflow: hidden; border: 1px solid #f0d8b8; }
+.award-header { padding: 14px; text-align: center; color: #fff; }
+.award-header svg { margin-bottom: 3px; }
+.award-header h3 { font-size: 14px; font-weight: 600; }
+.award-header span { font-size: 10px; opacity: 0.8; }
+.award-body { padding: 10px; background: #fffaf5; }
+.winner-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 8px;
+  border-radius: 10px; margin-bottom: 6px;
+}
+.winner-row:last-child { margin-bottom: 0; }
+.winner-row.top { background: linear-gradient(90deg, #FFF3E0, transparent); }
+.winner-row.normal { background: #f9f5f0; }
+.medal {
+  width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.medal.gold { width: 34px; height: 34px; font-size: 14px; background: linear-gradient(135deg, #FFD700, #FFA500); }
+.medal.silver { background: linear-gradient(135deg, #C0C0C0, #A0A0A0); }
+.medal.bronze { background: linear-gradient(135deg, #CD7F32, #B5651D); }
+.winner-name { font-size: 13px; font-weight: 600; color: #2d1f0f; }
+.winner-detail { font-size: 10px; color: #8b7355; }
+.winner-value { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.winner-unit { font-size: 10px; color: #8b7355; }
+
+/* Highlights */
+.highlights { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.highlight-card {
+  padding: 14px 10px; border-radius: 14px; text-align: center;
+  background: linear-gradient(135deg, #fff8f0, #fef0e0); border: 1px solid #f0d8b8;
+}
+.highlight-icon { font-size: 20px; margin-bottom: 4px; }
+.highlight-value { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.highlight-name { font-size: 11px; font-weight: 600; color: #2d1f0f; margin-top: 2px; }
+.highlight-label { font-size: 10px; color: #8b7355; }
+
+/* Middle & Potential */
+.midpot-section { margin-top: 12px; padding: 18px 14px; border-radius: 16px; background: #fffaf5; border: 1px solid #f0e0cc; }
+.midpot-title { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #2d1f0f; margin-bottom: 10px; }
+.midpot-subtitle { font-size: 11px; color: #8b7355; margin-left: auto; }
+.midpot-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.mp-card {
+  display: flex; align-items: center; gap: 8px; padding: 10px;
+  border-radius: 10px; background: #f9f5f0;
+}
+.mp-card.potential { background: linear-gradient(90deg, #FFF8E1, #f9f5f0); }
+.mp-avatar {
+  width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.mp-avatar.mid { background: linear-gradient(135deg, #78909C, #546E7A); }
+.mp-avatar.pot { background: linear-gradient(135deg, #FFB74D, #FF9800); }
+.mp-name { font-size: 12px; font-weight: 600; color: #2d1f0f; }
+.mp-detail { font-size: 10px; color: #8b7355; }
+.mp-tag { font-size: 9px; padding: 1px 6px; border-radius: 999px; font-weight: 500; }
+.mp-tag.fine { background: #FFCDD2; color: #C62828; }
+
+/* Restart Plan */
+.plan-section {
+  margin-top: 12px; padding: 20px 16px; border-radius: 16px;
+  background: linear-gradient(135deg, #2d1f0f, #1a1208); color: #fff8f0;
+}
+.plan-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.plan-header h2 { font-size: 16px; font-weight: 600; color: #FAA307; letter-spacing: 1px; }
+.plan-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.plan-card {
+  padding: 14px; border-radius: 12px; background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(250,163,7,0.2);
+}
+.plan-card-title { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: #FAA307; }
+.plan-card-content { font-size: 12px; color: #c4a884; line-height: 1.8; }
+
+/* Footer */
+.footer {
+  margin-top: 12px; padding: 22px 16px; border-radius: 16px;
+  background: linear-gradient(135deg, #fff8f0, #fef0e0); border: 1px solid #f0d8b8;
+  text-align: center;
+}
+.footer p { font-size: 14px; color: #2d1f0f; line-height: 1.8; font-weight: 500; }
+.footer-meta { font-size: 11px; color: #8b7355; margin-top: 6px; }
+
+/* Responsive: wider screens */
+@media (min-width: 600px) {
+  .container { max-width: 760px; padding: 24px 20px 40px; }
+  .hero { padding: 56px 32px 48px; }
+  .hero h1 { font-size: 44px; letter-spacing: 4px; }
+  .stats { grid-template-columns: repeat(4, 1fr); }
+  .awards { grid-template-columns: repeat(3, 1fr); }
+  .midpot-grid { grid-template-columns: repeat(4, 1fr); }
+  .plan-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-glow1"></div>
+  <div class="hero-glow2"></div>
+  <div style="position: relative; z-index: 1;">
+    <div class="hero-badge">
+      <i data-lucide="leaf" aria-hidden="true" style="width:14px;height:14px;color:#FAA307;"></i>
+      广平王跑团 · 2026 秋季重启
+    </div>
+    <h1>秋风起 · 踏风开跑</h1>
+    <p>夏风缠裹江城，酷暑已退。待凉风再起，我们一同踏风开跑。<br>暑假结束，跑团重启，不见不散！</p>
+    <div class="hero-date">
+      <i data-lucide="calendar-check" aria-hidden="true" style="width:20px;height:20px;color:#FAA307;"></i>
+      <div style="text-align:left;">
+        <div class="hero-date-label">RESTART DATE</div>
+        <div class="hero-date-value">2026.11.02</div>
+      </div>
+      <div class="hero-divider"></div>
+      <div style="text-align:left;">
+        <div class="hero-date-label">START TIME</div>
+        <div class="hero-date-value2">下午5:30 集合</div>
+      </div>
+    </div>
+    <div style="margin-top: 14px; display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(250,163,7,0.25);">
+      <i data-lucide="map-pin" aria-hidden="true" style="width:16px;height:16px;color:#FAA307;"></i>
+      <span style="font-size: 14px; font-weight: 600; color: #FFD60A;">九峰梅溪岭公园</span>
+      <span style="font-size: 11px; color: #c4a884;">（原鸡公山）</span>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats">
+  <div class="stat-card">
+    <i data-lucide="route" aria-hidden="true" style="width:18px;height:18px;color:#E85D04;"></i>
+    <div class="stat-value" style="color:#E85D04;">5,536</div>
+    <div class="stat-label">总跑量 (km)</div>
+  </div>
+  <div class="stat-card">
+    <i data-lucide="footprints" aria-hidden="true" style="width:18px;height:18px;color:#D4651F;"></i>
+    <div class="stat-value" style="color:#D4651F;">712</div>
+    <div class="stat-label">总打卡次数</div>
+  </div>
+  <div class="stat-card">
+    <i data-lucide="users" aria-hidden="true" style="width:18px;height:18px;color:#B5651D;"></i>
+    <div class="stat-value" style="color:#B5651D;">27</div>
+    <div class="stat-label">跑团成员</div>
+  </div>
+  <div class="stat-card">
+    <i data-lucide="wallet" aria-hidden="true" style="width:18px;height:18px;color:#8B4513;"></i>
+    <div class="stat-value" style="color:#8B4513;">¥968</div>
+    <div class="stat-label">团费总额</div>
+  </div>
+</section>
+
+<!-- Chart -->
+<section class="chart-section">
+  <div class="chart-header">
+    <div>
+      <div class="chart-title">每周跑量走势</div>
+      <div class="chart-subtitle">2025年50周 — 2026年44周 · 暑期断档清晰可见</div>
+    </div>
+    <div class="chart-legend">
+      <span style="display:inline-flex;align-items:center;gap:3px;"><span class="legend-dot" style="background:#E85D04;"></span>活跃期</span>
+      <span style="display:inline-flex;align-items:center;gap:3px;"><span class="legend-dot" style="background:#f0d8b8;"></span>暑假</span>
+    </div>
+  </div>
+  <div id="chart-container" style="width:100%;"></div>
+</section>
+
+<!-- Awards -->
+<div class="awards-header">
+  <h2><span style="width:20px;height:1px;background:#E85D04;display:inline-block;"></span><i data-lucide="trophy" aria-hidden="true" style="width:18px;height:18px;color:#E85D04;"></i>半程颁奖盛典<span style="width:20px;height:1px;background:#E85D04;display:inline-block;"></span></h2>
+  <p>暑期前的成绩单 · 三项大奖花落谁家</p>
+</div>
+<section class="awards">
+
+  <!-- 跑量最多 -->
+  <div class="award-card">
+    <div class="award-header" style="background:linear-gradient(135deg,#E85D04,#D4651F);">
+      <i data-lucide="flame" aria-hidden="true" style="width:20px;height:20px;"></i>
+      <h3>跑量最多</h3>
+      <span>谁是最强里程收割机</span>
+    </div>
+    <div class="award-body">
+      <div class="winner-row top">
+        <div class="medal gold">1</div>
+        <div style="flex:1;min-width:0;">
+          <div class="winner-name">刘广平</div>
+          <div class="winner-detail">131次打卡 · 均配速5'53"</div>
+        </div>
+        <div style="text-align:right;"><span class="winner-value" style="color:#E85D04;">1267</span> <span class="winner-unit">km</span></div>
+      </div>
+      <div class="winner-row normal">
+        <div class="medal silver">2</div>
+        <div style="flex:1;min-width:0;"><div class="winner-name">白文旭</div><div class="winner-detail">90次 · 均配速5'77"</div></div>
+        <div style="font-size:14px;font-weight:600;color:#D4651F;">943<span class="winner-unit"> km</span></div>
+      </div>
+      <div class="winner-row normal">
+        <div class="medal bronze">3</div>
+        <div style="flex:1;min-width:0;"><div class="winner-name">丁筱颜</div><div class="winner-detail">65次 · 均配速6'18"</div></div>
+        <div style="font-size:14px;font-weight:600;color:#D4651F;">605<span class="winner-unit"> km</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 跑的最勤快 -->
+  <div class="award-card">
+    <div class="award-header" style="background:linear-gradient(135deg,#2D6A4F,#1B4332);">
+      <i data-lucide="zap" aria-hidden="true" style="width:20px;height:20px;"></i>
+      <h3>跑的最勤快</h3>
+      <span>打卡王 · 风雨无阻</span>
+    </div>
+    <div class="award-body">
+      <div class="winner-row top" style="background:linear-gradient(90deg,#E8F5E9,transparent);">
+        <div class="medal gold">1</div>
+        <div style="flex:1;min-width:0;"><div class="winner-name">刘广平</div><div class="winner-detail">总跑量 1267 km</div></div>
+        <div style="text-align:right;"><span class="winner-value" style="color:#2D6A4F;">131</span> <span class="winner-unit">次</span></div>
+      </div>
+      <div class="winner-row normal">
+        <div class="medal silver">2</div>
+        <div style="flex:1;min-width:0;"><div class="winner-name">白文旭</div><div class="winner-detail">总跑量 943 km</div></div>
+        <div style="font-size:14px;font-weight:600;color:#2D6A4F;">90<span class="winner-unit"> 次</span></div>
+      </div>
+      <div class="winner-row normal">
+        <div class="medal bronze">3</div>
+        <div style="flex:1;min-width:0;"><div class="winner-name">丁筱颜</div><div class="winner-detail">总跑量 605 km</div></div>
+        <div style="font-size:14px;font-weight:600;color:#2D6A4F;">65<span class="winner-unit"> 次</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 罚款最多 -->
+  <div class="award-card">
+    <div class="award-header" style="background:linear-gradient(135deg,#8B0000,#A52A2A);">
+      <i data-lucide="piggy-bank" aria-hidden="true" style="width:20px;height:20px;"></i>
+      <h3>罚款最多</h3>
+      <span>乐捐达人 · 为团费做贡献</span>
+    </div>
+    <div class="award-body">
+      <div class="winner-row top" style="background:linear-gradient(90deg,#FFF0F0,transparent);">
+        <div class="medal gold">1</div>
+        <div style="flex:1;min-width:0;"><div class="winner-name">徐豪</div><div class="winner-detail">并列第一</div></div>
+        <div style="font-size:16px;font-weight:700;color:#8B0000;">¥70</div>
+      </div>
+      <div class="winner-row normal">
+        <div class="medal gold" style="width:30px;height:30px;font-size:13px;">1</div>
+        <div style="flex:1;min-width:0;"><div class="winner-name">张健康</div><div class="winner-detail">并列第一</div></div>
+        <div style="font-size:14px;font-weight:600;color:#8B0000;">¥70</div>
+      </div>
+      <div class="winner-row normal">
+        <div class="medal bronze">3</div>
+        <div style="flex:1;min-width:0;"><div class="winner-name">周博</div><div class="winner-detail">12周未跑</div></div>
+        <div style="font-size:14px;font-weight:600;color:#8B0000;">¥60</div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- Highlights -->
+<div class="awards-header" style="margin: 16px 0 10px;">
+  <h2><span style="width:20px;height:1px;background:#E85D04;display:inline-block;"></span><i data-lucide="star" aria-hidden="true" style="width:18px;height:18px;color:#E85D04;"></i>风采亮点<span style="width:20px;height:1px;background:#E85D04;display:inline-block;"></span></h2>
+  <p>那些让人惊叹的跑步瞬间</p>
+</div>
+<section class="highlights">
+  <div class="highlight-card">
+    <div class="highlight-icon">🏅</div>
+    <div class="highlight-value" style="color:#E85D04;">42.65<span style="font-size:11px;color:#8b7355;"> km</span></div>
+    <div class="highlight-name">白文旭</div>
+    <div class="highlight-label">单次最长 · 接近全马</div>
+  </div>
+  <div class="highlight-card">
+    <div class="highlight-icon">⚡</div>
+    <div class="highlight-value" style="color:#2D6A4F;">131<span style="font-size:11px;color:#8b7355;"> 次</span></div>
+    <div class="highlight-name">刘广平</div>
+    <div class="highlight-label">打卡最勤 · 从不缺席</div>
+  </div>
+  <div class="highlight-card">
+    <div class="highlight-icon">🎯</div>
+    <div class="highlight-value" style="color:#1565C0;">5'19"<span style="font-size:11px;color:#8b7355;"> /km</span></div>
+    <div class="highlight-name">余亚东</div>
+    <div class="highlight-label">最快均配速 · 速度之王</div>
+  </div>
+</section>
+
+<!-- 中坚力量 -->
+<section class="midpot-section">
+  <div class="midpot-title">
+    <i data-lucide="shield" aria-hidden="true" style="width:16px;height:16px;color:#546E7A;"></i>
+    中坚力量
+    <span class="midpot-subtitle">稳扎稳打 · 跑团脊梁</span>
+  </div>
+  <div class="midpot-grid">
+    <div class="mp-card">
+      <div class="mp-avatar mid">左</div>
+      <div style="flex:1;min-width:0;"><div class="mp-name">左磊</div><div class="mp-detail">95km · 18次打卡 · 排名12</div></div>
+    </div>
+    <div class="mp-card">
+      <div class="mp-avatar mid">闵</div>
+      <div style="flex:1;min-width:0;"><div class="mp-name">闵攀</div><div class="mp-detail">94km · 13次打卡 · 排名13</div></div>
+    </div>
+    <div class="mp-card">
+      <div class="mp-avatar mid">李</div>
+      <div style="flex:1;min-width:0;"><div class="mp-name">李雨佳</div><div class="mp-detail">81km · 12次打卡 · 排名14</div></div>
+    </div>
+    <div class="mp-card">
+      <div class="mp-avatar mid">周</div>
+      <div style="flex:1;min-width:0;"><div class="mp-name">周博</div><div class="mp-detail">80km · 15次打卡 · 排名15</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 潜力股 -->
+<section class="midpot-section" style="background:linear-gradient(135deg,#FFF8E1,#fffaf5);border-color:#FFE082;">
+  <div class="midpot-title">
+    <i data-lucide="trending-up" aria-hidden="true" style="width:16px;height:16px;color:#FF9800;"></i>
+    潜力股 · 蓄势待发
+    <span class="midpot-subtitle">秋冬赛季 · 期待爆发</span>
+  </div>
+  <div class="midpot-grid">
+    <div class="mp-card potential">
+      <div class="mp-avatar pot">张</div>
+      <div style="flex:1;min-width:0;"><div class="mp-name">张健康</div><div class="mp-detail">11km · 2次打卡</div></div>
+      <span class="mp-tag fine">罚款¥70</span>
+    </div>
+    <div class="mp-card potential">
+      <div class="mp-avatar pot">李</div>
+      <div style="flex:1;min-width:0;"><div class="mp-name">李杰</div><div class="mp-detail">21km · 4次打卡</div></div>
+      <span class="mp-tag fine">罚款¥30</span>
+    </div>
+    <div class="mp-card potential">
+      <div class="mp-avatar pot">周</div>
+      <div style="flex:1;min-width:0;"><div class="mp-name">周科</div><div class="mp-detail">25km · 5次打卡</div></div>
+      <span class="mp-tag fine">罚款¥50</span>
+    </div>
+    <div class="mp-card potential">
+      <div class="mp-avatar pot">黄</div>
+      <div style="flex:1;min-width:0;"><div class="mp-name">黄星杰</div><div class="mp-detail">36km · 7次打卡</div></div>
+      <span class="mp-tag fine">罚款¥10</span>
+    </div>
+  </div>
+  <div style="margin-top:10px;padding:10px;border-radius:10px;background:rgba(255,152,0,0.08);text-align:center;font-size:11px;color:#8b7355;line-height:1.6;">
+    🍂 暑假躺平不可怕，秋冬开跑赢回来！<br>罚款已为团费基金做出贡献，现在该用脚步赢回尊重了 💪
+  </div>
+</section>
+
+<!-- Restart Plan -->
+<section class="plan-section">
+  <div class="plan-header">
+    <i data-lucide="flag" aria-hidden="true" style="width:20px;height:20px;color:#FAA307;"></i>
+    <h2>11月2日 重启计划</h2>
+  </div>
+  <div class="plan-grid">
+    <div class="plan-card">
+      <div class="plan-card-title"><i data-lucide="clock" aria-hidden="true" style="width:14px;height:14px;"></i>重启仪式</div>
+      <div class="plan-card-content">
+        📅 11月2日（周一）下午5:30<br>📍 九峰梅溪岭公园（原鸡公山）<br>🏃 集合开跑 · 每周保底5公里<br>📸 打卡截图上传飞书表格<br>🏆 周五统一结算
+      </div>
+    </div>
+    <div class="plan-card">
+      <div class="plan-card-title"><i data-lucide="scroll-text" aria-hidden="true" style="width:14px;height:14px;"></i>章程恢复</div>
+      <div class="plan-card-content">
+        ✅ 奖惩规则全面恢复<br>💰 未完成5km → 罚款¥5/周<br>🎟️ 入会费¥20（新成员）<br>🎁 年终团费用于聚餐/装备
+      </div>
+    </div>
+    <div class="plan-card">
+      <div class="plan-card-title"><i data-lucide="target" aria-hidden="true" style="width:14px;height:14px;"></i>秋冬目标</div>
+      <div class="plan-card-content">
+        🎯 周完成率 ≥ 70%<br>📈 人均月跑量 ≥ 30km<br>🧊 冬季室内跑替代方案<br>🏅 年终评选年度MVP
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<section class="footer">
+  <i data-lucide="quote" aria-hidden="true" style="width:20px;height:20px;color:#E85D04;opacity:0.4;margin-bottom:6px;"></i>
+  <p>往日相约每周五公里，打卡互勉、小惩自律，皆是并肩热爱。<br>待凉风再起，我们一同踏风开跑。</p>
+  <div class="footer-meta">广平王跑团 · 懂事局 · 2026秋</div>
+</section>
+
+</div>
+
+<script>
+(function() {
+  var data = [{"week":"2025年50周","km":82.75},{"week":"2025年51周","km":143.06},{"week":"2025年52周","km":143.85},{"week":"2025年53周","km":84.79},{"week":"2026年1周","km":22.27},{"week":"2026年2周","km":144.68},{"week":"2026年3周","km":171.65},{"week":"2026年4周","km":104.05},{"week":"2026年5周","km":110.09},{"week":"2026年6周","km":112.22},{"week":"2026年7周","km":108.98},{"week":"2026年8周","km":127.81},{"week":"2026年9周","km":75.02},{"week":"2026年10周","km":202.44},{"week":"2026年11周","km":183.69},{"week":"2026年12周","km":160.88},{"week":"2026年13周","km":245.07},{"week":"2026年14周","km":49.97},{"week":"2026年15周","km":163.44},{"week":"2026年16周","km":211.13},{"week":"2026年17周","km":227.96},{"week":"2026年18周","km":184.02},{"week":"2026年19周","km":302.51},{"week":"2026年20周","km":201.9},{"week":"2026年21周","km":159.74},{"week":"2026年22周","km":208.42},{"week":"2026年23周","km":166.81},{"week":"2026年24周","km":100.46},{"week":"2026年25周","km":74.92},{"week":"2026年26周","km":55.39},{"week":"2026年27周","km":82.71},{"week":"2026年28周","km":24.28},{"week":"2026年29周","km":57.98},{"week":"2026年30周","km":34.03},{"week":"2026年31周","km":43.01},{"week":"2026年32周","km":62.58},{"week":"2026年33周","km":71.08},{"week":"2026年34周","km":55.02},{"week":"2026年35周","km":72.38},{"week":"2026年36周","km":115.32},{"week":"2026年37周","km":93.24},{"week":"2026年38周","km":79.35},{"week":"2026年39周","km":49.89},{"week":"2026年40周","km":109.18},{"week":"2026年41周","km":63.94},{"week":"2026年42周","km":71.89},{"week":"2026年43周","km":109.94},{"week":"2026年44周","km":10.1}];
+
+  function isSummerBreak(w) {
+    var m = w.match(/(\d+)年(\d+)周/);
+    if (!m) return false;
+    return parseInt(m[1]) === 2026 && parseInt(m[2]) >= 22 && parseInt(m[2]) <= 40;
+  }
+  function weekKey(w) {
+    var m = w.match(/(\d+)年(\d+)周/);
+    return m ? parseInt(m[1]) * 100 + parseInt(m[2]) : 999999;
+  }
+  data.sort(function(a, b) { return weekKey(a.week) - weekKey(b.week); });
+
+  function drawChart() {
+    var container = document.getElementById('chart-container');
+    if (!container || typeof d3 === 'undefined') return;
+    container.innerHTML = '';
+    var cw = container.clientWidth || 440;
+    var m = { top: 14, right: 8, bottom: 32, left: 32 };
+    var w = cw - m.left - m.right;
+    var h = 180 - m.top - m.bottom;
+
+    var svg = d3.select(container).append('svg')
+      .attr('viewBox', '0 0 ' + cw + ' ' + (h + m.top + m.bottom))
+      .style('width', '100%').style('display', 'block');
+    var g = svg.append('g').attr('transform', 'translate(' + m.left + ',' + m.top + ')');
+
+    var x = d3.scaleBand().domain(data.map(function(d) { return d.week; })).range([0, w]).padding(0.25);
+    var yMax = d3.max(data, function(d) { return d.km; });
+    var y = d3.scaleLinear().domain([0, yMax * 1.1]).range([h, 0]);
+
+    g.append('g').selectAll('line').data(y.ticks(4)).enter().append('line')
+      .attr('x1', 0).attr('x2', w)
+      .attr('y1', function(d) { return y(d); }).attr('y2', function(d) { return y(d); })
+      .attr('stroke', '#e8d8c4').attr('stroke-width', 1).attr('stroke-dasharray', '3,3');
+
+    var summer = data.filter(function(d) { return isSummerBreak(d.week); });
+    if (summer.length > 0) {
+      var xs = x(summer[0].week);
+      var xe = x(summer[summer.length - 1].week) + x.bandwidth();
+      g.append('rect').attr('x', xs).attr('y', 0).attr('width', xe - xs).attr('height', h)
+        .attr('fill', '#f0d8b8').attr('opacity', 0.35);
+      g.append('text').attr('x', (xs + xe) / 2).attr('y', 11)
+        .attr('text-anchor', 'middle').attr('fill', '#B5651D')
+        .attr('font-size', '9px').attr('font-weight', '500').text('☀ 暑假');
+    }
+
+    g.selectAll('.bar').data(data).enter().append('rect')
+      .attr('class', 'bar').attr('x', function(d) { return x(d.week); })
+      .attr('y', function(d) { return y(d.km); }).attr('width', x.bandwidth())
+      .attr('height', function(d) { return h - y(d.km); })
+      .attr('fill', function(d) { return isSummerBreak(d.week) ? '#f0d8b8' : '#E85D04'; })
+      .attr('rx', 2).style('cursor', 'pointer')
+      .append('title').text(function(d) { return d.week + ': ' + d.km + ' km'; });
+
+    var ticks = data.filter(function(d, i) { return i % 4 === 0 || i === data.length - 1; });
+    g.append('g').attr('transform', 'translate(0,' + h + ')').selectAll('text').data(ticks).enter().append('text')
+      .attr('x', function(d) { return x(d) + x.bandwidth() / 2; }).attr('y', 13)
+      .attr('text-anchor', 'middle').attr('fill', '#8b7355').attr('font-size', '8px')
+      .text(function(d) { var m = d.match(/(\d+)周/); return m ? m[1] : d; });
+
+    g.append('g').selectAll('text').data(y.ticks(4)).enter().append('text')
+      .attr('x', -5).attr('y', function(d) { return y(d); })
+      .attr('text-anchor', 'end').attr('dy', '0.35em')
+      .attr('fill', '#8b7355').attr('font-size', '9px').text(function(d) { return d; });
+
+    var peak = data.reduce(function(a, b) { return a.km > b.km ? a : b; });
+    g.append('text').attr('x', x(peak.week) + x.bandwidth() / 2)
+      .attr('y', y(peak.km) - 5).attr('text-anchor', 'middle')
+      .attr('fill', '#E85D04').attr('font-size', '9px').attr('font-weight', '600')
+      .text(peak.km + 'km');
+  }
+
+  function init() {
+    drawChart();
+    if (typeof lucide !== 'undefined') lucide.createIcons({ attrs: { width: 16, height: 16 } });
+    var ro = new ResizeObserver(function() { drawChart(); });
+    var c = document.getElementById('chart-container');
+    if (c) ro.observe(c);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+</script>
+</body>
+</html>
